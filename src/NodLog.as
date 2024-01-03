@@ -33,6 +33,11 @@ class NodLoad_Log {
         @this.fid = fid;
         loadTime = Time::Now;
         PopulateValues();
+        if (g_LogLoadedNodsToOpLog) LogToOpLog();
+    }
+
+    void LogToOpLog() {
+        trace('NODLOAD: ' + loadTime + ', ' + clsId + ', ' + cls.Name + ', ' + fidPath);
     }
 
     protected void PopulateValues() {
@@ -85,15 +90,21 @@ class NodLoad_Log {
         CopiableValue(nodPtrStr);
 
         UI::TableNextColumn();
+        UI::BeginDisabled(fid is null);
         if (UI::Button(Icons::Cube + "##" + nodPtrStr)) {
             ExploreNod(fid);
         }
-        if (fid.Container !is null) {
+        if (fid !is null && fid.Container !is null) {
             UI::SameLine();
             bool clicked = UI::Button(Icons::Cube + " Pack##" + nodPtrStr);
             AddSimpleTooltip(fid.Container.FileName);
             if (clicked) ExploreNod(fid.Container);
         }
+        UI::EndDisabled();
+    }
+
+    string AsCSVRow() {
+        return StripFormatCodes('' + loadTime + ', ' + clsId + ', ' + cls.Name + ', ' + fidPath);
     }
 }
 
@@ -140,3 +151,15 @@ uint64 GetPointerFromFid(CSystemFidFile@ fid) {
     return Dev::GetOffsetUint64(fid, O_FIDFILE_NOD);
 }
 
+void ExportNodLogCSV() {
+    auto filename = "NodLog_" + Time::Stamp + ".csv";
+    IO::File f(IO::FromStorageFolder(filename), IO::FileMode::Write);
+    for (uint i = 0; i < NodLoad_Logs.Length; i++) {
+        f.WriteLine(NodLoad_Logs[i].AsCSVRow());
+    }
+    f.Close();
+    Notify("Saved Nod Log CSV: " + IO::FromStorageFolder(filename));
+    if (g_AfterCSVOpenFolder) {
+        OpenExplorerPath(IO::FromStorageFolder(""));
+    }
+}

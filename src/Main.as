@@ -4,6 +4,12 @@ const string MenuTitle = "\\$83f" + PLUGIN_ICON + "\\$z " + PLUGIN_NAME;
 
 const bool HasPermissions = Meta::IsDeveloperMode();
 
+[Setting hidden]
+bool g_LogLoadedNodsToOpLog = false;
+
+[Setting hidden]
+bool g_AfterCSVOpenFolder = false;
+
 void Main() {
     if (!HasPermissions) {
         NotifyError("You must be running in developer mode to use this plugin.");
@@ -81,7 +87,7 @@ void RenderInterface() {
         UI::PushFont(g_MonoFont);
 
         if (HasPermissions) {
-            DrawNodLogTable();
+            DrawInterfaceInner();
         } else {
             UI::Text("\\$f80 Not running in dev mode!");
         }
@@ -91,23 +97,6 @@ void RenderInterface() {
     UI::End();
     UI::PopStyleColor();
 }
-
-void DrawNodLogTable() {
-    UI::PushStyleVar(UI::StyleVar::FramePadding, vec2(2, 0));
-    if (UI::BeginTable("nodlog", 8, UI::TableFlags::SizingStretchProp)) {
-        UI::ListClipper clip(NodLoad_Logs.Length);
-        while (clip.Step()) {
-            for (int i = clip.DisplayStart; i < clip.DisplayEnd; i++) {
-                UI::PushID(i);
-                NodLoad_Logs[i].DrawRow();
-                UI::PopID();
-            }
-        }
-        UI::EndTable();
-    }
-    UI::PopStyleVar();
-}
-
 
 void AddSimpleTooltip(const string &in msg) {
     if (UI::IsItemHovered()) {

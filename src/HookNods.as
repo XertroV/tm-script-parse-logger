@@ -20,7 +20,6 @@ void RemoveNodHooks() {
     for (uint i = 0; i < loaded.Length; i++) {
         RemHook(Text::ParseUInt(loaded[i]));
     }
-
 }
 
 dictionary LoadedHooks;
