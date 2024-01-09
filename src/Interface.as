@@ -11,10 +11,10 @@ void DrawInterfaceInner() {
         UI::EndTabItem();
     }
 
-    if (UI::BeginTabItem("??")) {
-        // DrawNodLogTable();
-        UI::EndTabItem();
-    }
+    // if (UI::BeginTabItem("??")) {
+    //     // DrawNodLogTable();
+    //     UI::EndTabItem();
+    // }
 
     UI::EndTabBar();
 }
@@ -25,6 +25,7 @@ void DrawGeneralTab() {
         if (IsHooked) RemoveNodHooks();
         else startnew(SetupNodHooks);
     }
+    S_HookNodsOnStartup = UI::Checkbox("Hook nod loads on startup?", S_HookNodsOnStartup);
     g_LogLoadedNodsToOpLog = UI::Checkbox("Log Nods to Openplanet Log?", g_LogLoadedNodsToOpLog);
 }
 
@@ -41,16 +42,19 @@ void DrawNodLogTable() {
     UI::SameLine();
     g_AfterCSVOpenFolder = UI::Checkbox("Open Folder after CSV", g_AfterCSVOpenFolder);
     UI::PushStyleVar(UI::StyleVar::FramePadding, vec2(2, 0));
-    if (UI::BeginTable("nodlog", 8, UI::TableFlags::SizingStretchProp)) {
-        UI::ListClipper clip(NodLoad_Logs.Length);
-        while (clip.Step()) {
-            for (int i = clip.DisplayStart; i < clip.DisplayEnd; i++) {
-                UI::PushID(i);
-                NodLoad_Logs[i].DrawRow();
-                UI::PopID();
+    if (UI::BeginChild("nodlogchild")) {
+        if (UI::BeginTable("nodlog", 8, UI::TableFlags::SizingStretchProp)) {
+            UI::ListClipper clip(NodLoad_Logs.Length);
+            while (clip.Step()) {
+                for (int i = clip.DisplayStart; i < clip.DisplayEnd; i++) {
+                    UI::PushID(i);
+                    NodLoad_Logs[i].DrawRow();
+                    UI::PopID();
+                }
             }
+            UI::EndTable();
         }
-        UI::EndTable();
     }
+    UI::EndChild();
     UI::PopStyleVar();
 }

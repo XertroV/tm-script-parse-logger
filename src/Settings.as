@@ -1,2 +1,2 @@
 [Setting hidden]
-bool S_HookNodsOnStartup = true;
+bool S_HookNodsOnStartup = false;

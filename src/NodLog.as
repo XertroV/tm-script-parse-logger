@@ -70,10 +70,10 @@ class NodLoad_Log {
         UI::Text(HumanTimeDelta);
 
         UI::TableNextColumn();
-        UI::Text(clsId);
+        CopiableValue(clsId);
 
         UI::TableNextColumn();
-        UI::Text(cls.Name);
+        CopiableValue(cls.Name);
 
         UI::TableNextColumn();
         // UI::Text(cls.UserName);
@@ -84,7 +84,7 @@ class NodLoad_Log {
         if (UI::IsItemClicked()) { SetClipboard(fidRawPath); }
 
         UI::TableNextColumn();
-        UI::Text(fidSize);
+        CopiableValue(fidSize);
 
         UI::TableNextColumn();
         CopiableValue(nodPtrStr);
