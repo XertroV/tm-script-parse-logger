@@ -57,7 +57,7 @@ void NotifyWarning(const string &in msg) {
 string HumanizeTime(int64 secondsDelta) {
     auto abs = Math::Abs(secondsDelta);
     auto units = abs < 60 ? " s" : abs < 3600 ? " m" : " h";
-    auto val = secondsDelta / (abs < 60 ? 1 : abs < 3600 ? 60 : 3600);
+    auto val = abs / (abs < 60 ? 1 : abs < 3600 ? 60 : 3600);
     auto dir = secondsDelta <= 0 ? " ago" : " away";
     return tostring(val) + units + dir;
 }
