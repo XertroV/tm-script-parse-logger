@@ -5,7 +5,7 @@ const string MenuTitle = "\\$83f" + PLUGIN_ICON + "\\$z " + PLUGIN_NAME;
 const bool HasPermissions = Meta::IsDeveloperMode();
 
 [Setting hidden]
-bool g_LogLoadedNodsToOpLog = false;
+bool g_LogScriptsToOpLog = false;
 
 [Setting hidden]
 bool g_AfterCSVOpenFolder = false;
@@ -16,13 +16,14 @@ void Main() {
         return;
     }
     startnew(LoadFonts);
-    if (!S_HookNodsOnStartup) return;
+    if (!S_HookScriptParseOnStartup) return;
 
-    startnew(SetupNodHooks);
+    startnew(SetupScriptParseHooks);
 }
 
 void Unload() {
-    RemoveNodHooks();
+    RemoveHook();
+    CheckUnhookAllRegisteredHooks();
 }
 void OnDestroyed() { Unload(); }
 void OnDisabled() { Unload(); }

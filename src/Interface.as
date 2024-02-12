@@ -6,13 +6,13 @@ void DrawInterfaceInner() {
         UI::EndTabItem();
     }
 
-    if (UI::BeginTabItem("Nod Log")) {
-        DrawNodLogTable();
+    if (UI::BeginTabItem("Script Parse Log")) {
+        DrawScriptParseTable();
         UI::EndTabItem();
     }
 
     // if (UI::BeginTabItem("??")) {
-    //     // DrawNodLogTable();
+    //     // DrawScriptParseTable();
     //     UI::EndTabItem();
     // }
 
@@ -21,34 +21,37 @@ void DrawInterfaceInner() {
 
 void DrawGeneralTab() {
     UI::Text(IsHooked ? "Status: Enabled" : "Status: Disabled");
-    if (UI::Button(IsHooked ? "Unhook On Load Nods" : "Hook On Load Nods")) {
-        if (IsHooked) RemoveNodHooks();
-        else startnew(SetupNodHooks);
+    if (UI::Button(IsHooked ? "Unhook On Script Parse" : "Hook On Script Parse")) {
+        if (IsHooked) RemoveHook();
+        else startnew(SetupScriptParseHooks);
     }
-    S_HookNodsOnStartup = UI::Checkbox("Hook nod loads on startup?", S_HookNodsOnStartup);
-    g_LogLoadedNodsToOpLog = UI::Checkbox("Log Nods to Openplanet Log?", g_LogLoadedNodsToOpLog);
+    S_HookScriptParseOnStartup = UI::Checkbox("Hook script parsing on startup?", S_HookScriptParseOnStartup);
+    g_LogScriptsToOpLog = UI::Checkbox("Log Scripts to Openplanet Log?", g_LogScriptsToOpLog);
 }
 
 
-void DrawNodLogTable() {
+void DrawScriptParseTable() {
     if (UI::Button("Clear Log")) {
-        NodLoad_Logs.RemoveRange(0, NodLoad_Logs.Length);
+        ScriptParse_Logs.RemoveRange(0, ScriptParse_Logs.Length);
     }
     UI::SameLine();
     if (UI::Button("Export CSV")) {
-        // NodLoad_Logs.RemoveRange(0, NodLoad_Logs.Length);
-        startnew(ExportNodLogCSV);
+        // ScriptParse_Logs.RemoveRange(0, ScriptParse_Logs.Length);
+        startnew(ExportLogCSV);
     }
     UI::SameLine();
     g_AfterCSVOpenFolder = UI::Checkbox("Open Folder after CSV", g_AfterCSVOpenFolder);
     UI::PushStyleVar(UI::StyleVar::FramePadding, vec2(2, 0));
     if (UI::BeginChild("nodlogchild")) {
-        if (UI::BeginTable("nodlog", 8, UI::TableFlags::SizingStretchProp)) {
-            UI::ListClipper clip(NodLoad_Logs.Length);
+        if (UI::BeginTable("nodlog", 3, UI::TableFlags::SizingStretchProp)) {
+            UI::TableSetupColumn("Time Ago", UI::TableColumnFlags::WidthFixed, 100);
+            UI::TableSetupColumn("Script", UI::TableColumnFlags::WidthStretch);
+            UI::TableSetupColumn("##tools", UI::TableColumnFlags::WidthFixed, 50);
+            UI::ListClipper clip(ScriptParse_Logs.Length);
             while (clip.Step()) {
                 for (int i = clip.DisplayStart; i < clip.DisplayEnd; i++) {
                     UI::PushID(i);
-                    NodLoad_Logs[i].DrawRow();
+                    ScriptParse_Logs[i].DrawRow();
                     UI::PopID();
                 }
             }

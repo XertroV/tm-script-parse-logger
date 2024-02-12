@@ -1,2 +1,2 @@
 [Setting hidden]
-bool S_HookNodsOnStartup = false;
+bool S_HookScriptParseOnStartup = false;

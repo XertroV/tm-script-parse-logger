@@ -1,66 +1,17 @@
-bool IsHooked = false;
-
-void SetupNodHooks() {
-    if (NodsToLoad.Length == 0) {
-        PopulateNodsToLoad();
-        yield();
-    }
-    IsHooked = true;
-    for (uint i = 0; i < NodsToLoad.Length; i++) {
-        AddHook(NodsToLoad[i]);
-    }
-    trace('Hooked nod loading for ' + LoadedHooks.GetSize() + ' nods');
-}
-
-void RemoveNodHooks() {
-    if (!IsHooked) return;
-    IsHooked = false;
-    auto loaded = LoadedHooks.GetKeys();
-    trace('Unhooking ' + loaded.Length + ' nods');
-    for (uint i = 0; i < loaded.Length; i++) {
-        RemHook(Text::ParseUInt(loaded[i]));
+bool IsHooked {
+    get {
+        return HookScriptParsing.IsApplied();
     }
 }
 
-dictionary LoadedHooks;
-
-void AddHook(uint id) {
-    RegisterLoadCallback(id);
-    LoadedHooks[tostring(id)] = true;
+void SetupScriptParseHooks() {
+    trace('Hooked script parsing');
+    HookScriptParsing.Apply();
 }
 
-void RemHook(uint id) {
-    UnregisterLoadCallback(id);
-    LoadedHooks.Delete(tostring(id));
-}
-
-uint[] NodsToLoad;
-
-void PopulateNodsToLoad() {
-    NodsToLoad.RemoveRange(0, NodsToLoad.Length);
-    auto opJson = Json::FromFile(IO::FromDataFolder("OpenplanetNext.json"));
-    auto nsJson = opJson["ns"];
-    auto nss = nsJson.GetKeys();
-    for (uint n = 0; n < nss.Length; n++) {
-        yield();
-        PopulateNodsToLoad_NsJson(nsJson[nss[n]]);
-        trace("Loaded classes in namespace: " + nss[n]);
-    }
-    for (uint i = 0; i < ExtraClassIds.Length; i++) {
-        NodsToLoad.InsertLast(ExtraClassIds[i]);
-    }
-    trace("Loaded " + NodsToLoad.Length + " nod types");
-}
-
-void PopulateNodsToLoad_NsJson(Json::Value@ classes) {
-    auto names = classes.GetKeys();
-    for (uint i = 0; i < names.Length; i++) {
-        auto cls = classes[names[i]];
-        if (!cls.HasKey("i")) continue;
-        auto hexId = string(cls["i"]);
-        uint32 id = ParseHexUint(hexId);
-        NodsToLoad.InsertLast(id);
-    }
+void RemoveHook() {
+    trace('Unhooked script parsing');
+    HookScriptParsing.Unapply();
 }
 
 
