@@ -17,6 +17,10 @@ void DrawInterfaceInner() {
     // }
 
     UI::EndTabBar();
+
+    for (uint i = 0; i < LogsWithActiveWindow.Length; i++) {
+        LogsWithActiveWindow[i].DrawWindow();
+    }
 }
 
 void DrawGeneralTab() {
@@ -44,8 +48,9 @@ void DrawScriptParseTable() {
     UI::PushStyleVar(UI::StyleVar::FramePadding, vec2(2, 0));
     if (UI::BeginChild("nodlogchild")) {
         if (UI::BeginTable("nodlog", 3, UI::TableFlags::SizingStretchProp)) {
-            UI::TableSetupColumn("Time Ago", UI::TableColumnFlags::WidthFixed, 100);
-            UI::TableSetupColumn("Script", UI::TableColumnFlags::WidthStretch);
+            UI::TableSetupColumn("Time Ago", UI::TableColumnFlags::WidthFixed, 70);
+            UI::TableSetupColumn("Script Name", UI::TableColumnFlags::WidthStretch);
+            // UI::TableSetupColumn("Script", UI::TableColumnFlags::WidthFixed, 1);
             UI::TableSetupColumn("##tools", UI::TableColumnFlags::WidthFixed, 50);
             UI::ListClipper clip(ScriptParse_Logs.Length);
             while (clip.Step()) {

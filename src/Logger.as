@@ -3,22 +3,58 @@ void LogParsedScript(const string &in script) {
 }
 
 ScriptParse_Log@[] ScriptParse_Logs;
+ScriptParse_Log@[] LogsWithActiveWindow;
+ScriptParse_Log@[] RemoveWindows;
+void RemoveLogWindow(ScriptParse_Log@ log) {
+    RemoveWindows.InsertLast(log);
+}
+void RemoveWindowsCoro() {
+    while (true) {
+        yield();
+        if (RemoveWindows.Length == 0) continue;
+        for (uint i = 0; i < RemoveWindows.Length; i++) {
+            auto ix = LogsWithActiveWindow.FindByRef(RemoveWindows[i]);
+            if (ix != -1) {
+                LogsWithActiveWindow.RemoveAt(ix);
+            }
+        }
+        RemoveWindows.RemoveRange(0, RemoveWindows.Length);
+    }
+}
 
 class ScriptParse_Log {
     int64 loadTime;
     string script;
+    string scriptSafeRender;
     string fidPath;
     string fidRawPath;
     string fidSize;
     string scriptHash;
-    bool windowVisible = false;
+    bool _windowVisible = false;
+    string scriptName = "?";
+    bool foundName = false;
+    string windowTitle = "?";
+    string fileName = "?";
 
     ScriptParse_Log(const string &in script) {
         this.script = script;
-        scriptHash = Crypto::MD5(script);
+        PopulateValues();
+
         loadTime = Time::Now;
         // PopulateValues();
         if (g_LogScriptsToOpLog) LogToOpLog();
+    }
+
+    bool windowVisible {
+        get { return _windowVisible; }
+        set {
+            if (_windowVisible == value) return;
+            _windowVisible = value;
+            if (value) LogsWithActiveWindow.InsertLast(this);
+            else {
+                RemoveLogWindow(this);
+            }
+        }
     }
 
     void LogToOpLog() {
@@ -26,7 +62,31 @@ class ScriptParse_Log {
     }
 
     protected void PopulateValues() {
-        // do nothing, legacy
+        scriptHash = Crypto::MD5(script);
+        scriptSafeRender = script.SubStr(0, 4096).Trim().Replace('\n', '\\n').Replace('\r', '\\r');
+        auto match = Regex::Search(scriptSafeRender, "#Const[ \\t][ \\tA-Za-z_]*(ScriptName|PageUID)[ \\t][ \\t]*\"([^\"]+)\"");
+        if (match.Length >= 3) {
+            foundName = true;
+            scriptName = match[2].Replace("\\", "/");
+            windowTitle = scriptName;
+            auto nameParts = scriptName.Split("/");
+            fileName = nameParts[nameParts.Length - 1];
+            nameParts[nameParts.Length - 1] = "\\$8f8" + fileName;
+            scriptName = "\\$aaa" + string::Join(nameParts, "/");
+        } else {
+            scriptName = "\\$aaa" + scriptHash.SubStr(0, 7) + "  \\$z" + scriptSafeRender;
+            windowTitle = "Script: " + scriptHash.SubStr(0, 7);
+        }
+    }
+
+    void DrawWindow() {
+        if (windowVisible) {
+            UI::SetNextWindowSize(600, 400, UI::Cond::FirstUseEver);
+            if (UI::Begin("Script: " + scriptName, windowVisible)) {
+                UI::Text(script);
+            }
+            UI::End();
+        }
     }
 
     string get_HumanTimeDelta() {
@@ -43,9 +103,11 @@ class ScriptParse_Log {
         // if (UI::IsItemClicked()) { SetClipboard(HumanTimeDelta); }
 
         UI::TableNextColumn();
-        UI::Text(script);
+        UI::Text(scriptName);
+
         HandOnHover();
         AddSimpleTooltip("Click to copy script.\nHash: " + scriptHash);
+        if (UI::IsItemClicked()) { SetClipboard(script); }
 
         UI::TableNextColumn();
         if (UI::Button(Icons::SearchPlus + "##" + scriptHash)) {

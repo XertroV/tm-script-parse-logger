@@ -1,5 +1,7 @@
 # Script Parse Logger
 
+This openplanet plugin logs all parsed scripts. It can then export them to a file.
+
 License: Public Domain
 
 Authors: XertroV

@@ -21,7 +21,7 @@ bool ClickableLabel(const string &in label, const string &in value, const string
 
 void SetClipboard(const string &in msg) {
     IO::SetClipboard(msg);
-    Notify("Copied: " + msg);
+    Notify("Copied: " + msg.SubStr(0, 200) + (msg.Length > 200 ? "..." : ""));
 }
 
 void HandOnHover() {

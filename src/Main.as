@@ -11,11 +11,25 @@ bool g_LogScriptsToOpLog = false;
 bool g_AfterCSVOpenFolder = false;
 
 void Main() {
+    // auto testScript = "/**\\n\\n#Const    ScriptName	    \"Libs/Nadeo/CMGame/Modes/Legacy/XmlRpc2_Base.Script.txt\"\\n\\n */";
+    // auto test = ScriptParse_Log(testScript);
+    // auto match1 = Regex::Search(testScript, "#Const", Regex::Flags::Extended);
+    // auto match2 = Regex::Search(testScript, "#Const([ \\t])+");
+    // auto match3 = Regex::Search(testScript, "#Const([ \\t])+ScriptName");
+    // auto match4 = Regex::Search(testScript, "#Const([ \\t])+ScriptName([ \\t])+");
+    // auto match5 = Regex::Search(testScript, "#Const([ \\t])+ScriptName([ \\t])+\"");
+    // trace("Match1: " + match1[0].Length);
+    // trace("Match2: " + match2[0].Length);
+    // trace("Match3: " + match3[0].Length);
+    // trace("Match4: " + match4[0].Length);
+    // trace("Match5: " + match5[0].Length);
+
     if (!HasPermissions) {
         NotifyError("You must be running in developer mode to use this plugin.");
         return;
     }
     startnew(LoadFonts);
+    startnew(RemoveWindowsCoro);
     if (!S_HookScriptParseOnStartup) return;
 
     startnew(SetupScriptParseHooks);
