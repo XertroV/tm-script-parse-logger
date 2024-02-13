@@ -1,17 +1,19 @@
 bool IsHooked {
     get {
-        return HookScriptParsing.IsApplied();
+        return HookScriptParsing.IsApplied() || Hook_Parse_Xml.IsApplied();
     }
 }
 
 void SetupScriptParseHooks() {
     trace('Hooked script parsing');
     HookScriptParsing.Apply();
+    Hook_Parse_Xml.Apply();
 }
 
 void RemoveHook() {
     trace('Unhooked script parsing');
     HookScriptParsing.Unapply();
+    Hook_Parse_Xml.Unapply();
 }
 
 

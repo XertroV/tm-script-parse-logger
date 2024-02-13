@@ -31,11 +31,11 @@ void OnHook_ScriptParse(uint64 r14) {
 
 bool IsHeapPtrOkay(uint64 ptr) {
     if (ptr < 0xFFEEEEDDDD) {
-        warn('[CRIT | Hook_ScriptParse] heap ptr is < 0xFFEEEEDDDD');
+        warn('[CRIT | Hook_ScriptParse] heap ptr is < 0xFFEEEEDDDD: ' + Text::FormatPointer(ptr));
         return false;
     }
     if (ptr > 0x4FFEEEEDDDD) {
-        warn('[CRIT | Hook_ScriptParse] heap ptr is > 0x4FFEEEEDDDD');
+        warn('[CRIT | Hook_ScriptParse] heap ptr is > 0x4FFEEEEDDDD: ' + Text::FormatPointer(ptr));
         return false;
     }
     return true;
@@ -45,11 +45,11 @@ bool IsHeapPtrOkay(uint64 ptr) {
 bool IsStackPtrOkay(uint64 ptr) {
     // since this is a stack pointer, we expect it to be in a certain range
     if (ptr < 0xFFFFFFFF) {
-        warn('[CRIT | Hook_ScriptParse] stack ptr is < 0xFFFFFFFF');
+        warn('[CRIT | Hook_ScriptParse] stack ptr is < 0xFFFFFFFF: ' + Text::FormatPointer(ptr));
         return false;
     }
     if (ptr > 0xFFEEEEDDDD) {
-        warn('[CRIT | Hook_ScriptParse] stack ptr is > 0xFFEEEEDDDD');
+        warn('[CRIT | Hook_ScriptParse] stack ptr is > 0xFFEEEEDDDD: ' + Text::FormatPointer(ptr));
         return false;
     }
     return true;

@@ -1,6 +1,18 @@
 void LogParsedScript(const string &in script) {
     ScriptParse_Logs.InsertLast(ScriptParse_Log(script));
 }
+void LogParsedScript(const string &in script, const string &in scriptName) {
+    ScriptParse_Logs.InsertLast(ScriptParse_Log(script, scriptName));
+}
+void LogParsedXml(const string &in xml) {
+    ScriptParse_Logs.InsertLast(ScriptParse_Log(xml, ParseLogType::Xml));
+}
+
+enum ParseLogType {
+    Script,
+    Xml,
+    Other
+}
 
 ScriptParse_Log@[] ScriptParse_Logs;
 ScriptParse_Log@[] LogsWithActiveWindow;
@@ -37,11 +49,29 @@ class ScriptParse_Log {
     string fileName = "?";
 
     ScriptParse_Log(const string &in script) {
-        this.script = script;
-        PopulateValues();
+        InitFromScript(script);
+    }
+    ScriptParse_Log(const string &in script, const string &in scriptName) {
+        InitFromScript(script);
+        this.scriptName = "\\$ff8" + scriptName;
+        this.windowTitle = this.scriptName;
+    }
+    ScriptParse_Log(const string &in unk, ParseLogType type) {
+        Init(unk, type);
+    }
 
+    void InitFromScript(const string &in script) {
+        Init(script, ParseLogType::Script);
+    }
+
+    void Init(const string &in script, ParseLogType type) {
         loadTime = Time::Now;
-        // PopulateValues();
+        this.script = script;
+        if (type == ParseLogType::Xml) {
+            PopulateXmlValues();
+        } else {
+            PopulateScriptValues();
+        }
         if (g_LogScriptsToOpLog) LogToOpLog();
     }
 
@@ -61,7 +91,21 @@ class ScriptParse_Log {
         trace('Parsing Script: ' + loadTime + ' | ' + script);
     }
 
-    protected void PopulateValues() {
+    void PopulateXmlValues() {
+        scriptHash = Crypto::MD5(script);
+        scriptSafeRender = script.SubStr(0, 4096).Trim().Replace('\n', '\\n').Replace('\r', '\\r');
+        auto match = Regex::Search(scriptSafeRender, "manialink[ \\t][ \\t]*name=\"([^\"]+)\"");
+        if (match.Length > 0) {
+            foundName = true;
+            scriptName = match[0];
+            scriptName = "\\$8ff" + scriptName;
+        } else {
+            scriptName = "\\$f8f" + scriptHash.SubStr(0, 7) + "  \\$z" + scriptSafeRender.SubStr(0, 100);
+        }
+        windowTitle = "XML: " + scriptName;
+    }
+
+    protected void PopulateScriptValues() {
         scriptHash = Crypto::MD5(script);
         scriptSafeRender = script.SubStr(0, 4096).Trim().Replace('\n', '\\n').Replace('\r', '\\r');
         auto match = Regex::Search(scriptSafeRender, "#Const[ \\t][ \\tA-Za-z_]*(ScriptName|PageUID)[ \\t][ \\t]*\"([^\"]+)\"");
@@ -110,7 +154,7 @@ class ScriptParse_Log {
         if (UI::IsItemClicked()) { SetClipboard(script); }
 
         UI::TableNextColumn();
-        if (UI::Button(Icons::SearchPlus + "##" + scriptHash)) {
+        if (UI::Button(Icons::SearchPlus + "##" + scriptHash + scriptName)) {
             this.windowVisible = true;
         }
         AddSimpleTooltip("Show script in new window");
