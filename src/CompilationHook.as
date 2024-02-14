@@ -16,6 +16,12 @@ rbp
 + 0x1E0 = where r8 pointed to
 
 */
+
+
+// don't need this, but it works
+/*
+
+
 HookHelper@ Hook_Script_Compilation = HookHelper(
     "48 89 85 00 01 00 00 48 8B 85 80 01 00 00 48 8B DA 4C 8B AD 88 01 00 00 48 8B B5 90 01 00 00 48 89 45 A8 65 48 8B 04 25 58 00 00 00 4C 89 4C 24 78 4C 89 45 80 48 89 55 B8 48 8B 38 B8 10 00 00 00 48 89 4C 24 70 4C 89 6D B0 48 89 75 C0 80 3C 38 00 75 05 E8 53 FF CE 00 BA 50 01 00 00 48 8D 4D 00 48 03 D7 E8 52 72 90 FF 33 FF 48 8D 15 69 FC 36 01",
     0, 2, "On_Script_Compilation_Hook"
@@ -61,6 +67,8 @@ string ReadCompilationScriptName(uint64 rbp) {
     return Dev::ReadCString(pName, lenName);
 }
 
+*/
+
 
 
 // this works (0, 3) but only gets UI layers
@@ -69,7 +77,9 @@ string ReadCompilationScriptName(uint64 rbp) {
 // RDX: stack ptr -> string ptr -> <manialink ...>
 // r11: CGameUILayer?
 
-const string XmlPrepPattern = "E8 D7 FA FF FF 48 85 DB 0F 84 99 00 00 00 48 85 F6 0F 84 90 00 00 00 80 3E 00 0F 84 87 00 00 00 48 83 FB FF 75 0F 66 0F 1F 44 00 00 48 FF C3 80 3C 1E 00 75 F7 48 8D 4B 01 E8 DA C5 24 01";
+//const string XmlPrepPattern="E8 D7 FA FF FF 48 85 DB 0F 84 99 00 00 00 48 85 F6 0F 84 90 00 00 00 80 3E 00 0F 84 87 00 00 00 48 83 FB FF 75 0F 66 0F 1F 44 00 00 48 FF C3 80 3C 1E 00 75 F7 48 8D 4B 01 E8 DA C5 24 01";
+// technically don't need the last 6 bytes of the pattern
+const string XmlPrepPattern = "E8 ?? ?? ?? ?? 48 85 DB 0F 84 ?? 00 00 00 48 85 F6 0F 84 ?? 00 00 00 80 3E 00 0F 84 ?? 00 00 00"; // 48 83 FB FF 75 0F 66 0F 1F 44 00 00 48 FF C3 80 3C 1E 00 75 F7 48 8D 4B 01 E8 DA C5 24 01";
 FunctionHookHelper@ Hook_Parse_Xml = FunctionHookHelper(
     XmlPrepPattern, 0, 0, "On_ParseXml_Hook"
 );
@@ -77,7 +87,7 @@ FunctionHookHelper@ Hook_Parse_Xml = FunctionHookHelper(
 // RSI -> string
 
 void On_ParseXml_Hook(uint64 rsi) {
-    trace('on parse xml hook - rsi: ' + Text::FormatPointer(rsi));
+    // trace('on parse xml hook - rsi: ' + Text::FormatPointer(rsi));
     if (rsi == 0) {
         warn('[CRIT | Hook_Parse_Xml] rsi is 0');
         return;
@@ -86,7 +96,7 @@ void On_ParseXml_Hook(uint64 rsi) {
     // auto ptr = Dev::ReadUInt64(rsi);
     if (!IsHeapPtrOkay(rsi)) return;
     // auto length = Dev::ReadUInt32(rsi + 0x8);
-    trace('ParseXml: found a string');
+    // trace('ParseXml: found a string');
     string xml = Dev::ReadCString(rsi);
     if (xml.Contains("<manialink")) {
         LogParsedXml(xml);

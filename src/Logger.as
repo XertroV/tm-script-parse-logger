@@ -43,10 +43,12 @@ class ScriptParse_Log {
     string fidSize;
     string scriptHash;
     bool _windowVisible = false;
+    string rawScriptName = "?";
     string scriptName = "?";
     bool foundName = false;
     string windowTitle = "?";
     string fileName = "?";
+    string[]@ lines;
 
     ScriptParse_Log(const string &in script) {
         InitFromScript(script);
@@ -94,15 +96,17 @@ class ScriptParse_Log {
     void PopulateXmlValues() {
         scriptHash = Crypto::MD5(script);
         scriptSafeRender = script.SubStr(0, 4096).Trim().Replace('\n', '\\n').Replace('\r', '\\r');
-        auto match = Regex::Search(scriptSafeRender, "manialink[ \\t][ \\t]*name=\"([^\"]+)\"");
-        if (match.Length > 0) {
+        auto match = Regex::Search(scriptSafeRender, "manialink[ ]([^<>]*)[ \\t]*name=\"([^\"]+)\"");
+        if (match.Length > 2) {
             foundName = true;
-            scriptName = match[0];
-            scriptName = "\\$8ff" + scriptName;
+            scriptName = match[2];
+            rawScriptName = scriptName;
+            scriptName = "XML: \\$8ff" + scriptName;
         } else {
-            scriptName = "\\$f8f" + scriptHash.SubStr(0, 7) + "  \\$z" + scriptSafeRender.SubStr(0, 100);
+            scriptName = "XML: \\$f8f" + scriptHash.SubStr(0, 7) + "  \\$z" + scriptSafeRender.SubStr(0, 100);
         }
-        windowTitle = "XML: " + scriptName;
+        windowTitle = scriptName;
+        @this.lines = script.Split("\n");
     }
 
     protected void PopulateScriptValues() {
@@ -112,6 +116,7 @@ class ScriptParse_Log {
         if (match.Length >= 3) {
             foundName = true;
             scriptName = match[2].Replace("\\", "/");
+            rawScriptName = scriptName;
             windowTitle = scriptName;
             auto nameParts = scriptName.Split("/");
             fileName = nameParts[nameParts.Length - 1];
@@ -121,13 +126,14 @@ class ScriptParse_Log {
             scriptName = "\\$aaa" + scriptHash.SubStr(0, 7) + "  \\$z" + scriptSafeRender;
             windowTitle = "Script: " + scriptHash.SubStr(0, 7);
         }
+        @this.lines = script.Split("\n");
     }
 
     void DrawWindow() {
         if (windowVisible) {
-            UI::SetNextWindowSize(600, 400, UI::Cond::FirstUseEver);
+            UI::SetNextWindowSize(700, 500, UI::Cond::FirstUseEver);
             if (UI::Begin("Script: " + scriptName, windowVisible)) {
-                UI::Text(script);
+                DrawLinesAndNumbers(scriptName, lines);
             }
             UI::End();
         }
@@ -157,7 +163,7 @@ class ScriptParse_Log {
         if (UI::Button(Icons::SearchPlus + "##" + scriptHash + scriptName)) {
             this.windowVisible = true;
         }
-        AddSimpleTooltip("Show script in new window");
+        AddSimpleTooltip("Open " + scriptName.SubStr(0, 200));
         // if (fid !is null && fid.Container !is null) {
         //     UI::SameLine();
         //     bool clicked = UI::Button(Icons::Cube + " Pack##" + nodPtrStr);
@@ -167,7 +173,7 @@ class ScriptParse_Log {
     }
 
     string AsCSVRow() {
-        return ('___SCRIPT START___, ' + loadTime + ', ' + script);
+        return ('___SCRIPT START___, ' + loadTime + ', ' + scriptName + ', ' + script);
     }
 }
 

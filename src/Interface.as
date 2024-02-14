@@ -66,3 +66,24 @@ void DrawScriptParseTable() {
     UI::EndChild();
     UI::PopStyleVar();
 }
+
+
+void DrawLinesAndNumbers(const string &in filename, string[]@ lines) {
+    UI::ListClipper clip(lines.Length);
+    auto cursorStart = UI::GetCursorPos();
+    auto extraWidth = Draw::MeasureString(". ").x + UI::GetStyleVarVec2(UI::StyleVar::ItemSpacing).x * 2.;
+    auto max_line_number = lines.Length;
+    auto ln_max_str_len = tostring(max_line_number).Length;
+    auto lnNbsWidth = Draw::MeasureString(("00000").SubStr(0, ln_max_str_len)).x + extraWidth;
+    vec2 cursorPos;
+    while (clip.Step()) {
+        for (int i = clip.DisplayStart; i < clip.DisplayEnd; i++) {
+            UI::PushID(i);
+            cursorPos = UI::GetCursorPos();
+            UI::Text("\\$999" + (i + 1) + ". ");
+            UI::SetCursorPos(cursorPos + vec2(lnNbsWidth, 0));
+            UI::Text(lines[i]);
+            UI::PopID();
+        }
+    }
+}

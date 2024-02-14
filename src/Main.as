@@ -1,6 +1,6 @@
 const string PLUGIN_NAME = Meta::ExecutingPlugin().Name;
 const string PLUGIN_ICON = Icons::FireExtinguisher;
-const string MenuTitle = "\\$83f" + PLUGIN_ICON + "\\$z " + PLUGIN_NAME;
+const string MenuTitle = "\\$6af" + PLUGIN_ICON + "\\$z " + PLUGIN_NAME;
 
 const bool HasPermissions = Meta::IsDeveloperMode();
 
